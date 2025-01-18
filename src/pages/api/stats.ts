@@ -75,6 +75,11 @@ const MONTH_NAMES = [
   "December",
 ] as const;
 
+// Constants for the Git Wrapped year
+const WRAPPED_YEAR = 2024;
+const WRAPPED_START = `${WRAPPED_YEAR}-01-01T00:00:00Z`;
+const WRAPPED_END = `${WRAPPED_YEAR}-12-31T23:59:59Z`;
+
 /**
  * GitHub Stats API endpoint
  * Fetches and processes a user's GitHub statistics including:
@@ -103,7 +108,7 @@ export default async function GET(request: Request): Promise<NextResponse> {
     const query = `
       query($username: String!) {
         user(login: $username) {
-          contributionsCollection {
+          contributionsCollection(from: "${WRAPPED_START}", to: "${WRAPPED_END}") {
             contributionCalendar {
               totalContributions
               weeks {
@@ -133,8 +138,7 @@ export default async function GET(request: Request): Promise<NextResponse> {
     // Process contribution data for the current year
     const contributionDays =
       userData.contributionsCollection.contributionCalendar.weeks
-        .flatMap((week: any) => week.contributionDays)
-        .filter((day: any) => new Date(day.date) >= new Date("2024-01-01"));
+        .flatMap((week: any) => week.contributionDays);
 
     // Calculate monthly contribution statistics
     const monthlyCommits: Record<string, number> = {};
